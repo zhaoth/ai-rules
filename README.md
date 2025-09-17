@@ -17,18 +17,36 @@ ai-rules/
 
 ## 📚 规则文档列表
 
-### 🎨 前端开发类
-- **Vue-Development-Guide.md** - 前端开发 AI 助手规则
-  - 支持 Vue、React、TypeScript 等技术栈
-  - 包含开发模式、工作流程、质量控制等
-  - 集成 MCP 工具和智能反馈机制
+### 🎨 前端开发类规则
+- **Vue-Development-Guide.md** - Vue 3 + TypeScript + TailwindCSS 开发规范
+  - 代码风格和命名约定
+  - 组件设计和状态管理
+  - 性能优化和最佳实践
 
-### 🔮 未来规划
-- **Backend-Development-Rules.md** - 后端开发 AI 助手规则
-- **Data-Analysis-Rules.md** - 数据分析 AI 助手规则  
-- **DevOps-Rules.md** - 运维 AI 助手规则
-- **Design-Rules.md** - 设计 AI 助手规则
-- **Content-Writing-Rules.md** - 内容创作 AI 助手规则
+- **Vue 2 升级 Vue 3 迁移指南** (`Vue2-to-Vue3-Migration-Guide.md`)
+  - Vue 2 到 Vue 3 完整迁移规则
+  - Element UI 到 Element Plus 升级方案
+  - 自动化迁移工具和测试策略
+  - 破坏性变更详细说明和解决方案
+  - 状态：✅ 已完成
+
+### 🔧 后端开发类规则
+- **Python-Development-Guide.md** - Python 后端开发规范 ✅
+  - 代码风格和类型提示
+  - FastAPI、Django、Flask 框架规范
+  - 测试实践和部署指南
+
+### 🔮 未来规划的规则文档
+
+- **React 开发规范** - React 18+ + TypeScript 开发规范
+- **Node.js 开发规范** - Node.js 后端开发最佳实践
+- **微服务架构规范** - 微服务设计和实施指南
+- **数据库设计规范** - 关系型和非关系型数据库设计
+- **API 设计规范** - RESTful 和 GraphQL API 设计
+- **DevOps 实践规范** - CI/CD 和部署自动化
+- **安全开发规范** - 前后端安全最佳实践
+- **性能优化规范** - 全栈性能优化指南
+- **代码审查规范** - 代码质量和审查流程
 
 ## 🚀 快速开始
 
