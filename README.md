@@ -17,6 +17,13 @@ ai-rules/
 
 ## 📚 规则文档列表
 
+### 📝 通用规则
+- **General-Rules.md** - 通用 AI 交互规则
+  - AI 助手输出语言
+  - 代码生成时默认添加代码注释
+  - 遵循个人规则
+  - 切换项目依然生效
+
 ### 🎨 前端开发类规则
 - **Vue-Development-Guide.md** - Vue 3 + TypeScript + TailwindCSS 开发规范
   - 代码风格和命名约定
