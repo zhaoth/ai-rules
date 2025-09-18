@@ -80,11 +80,338 @@ typings/
 .pnp.*
 
 # IDE 和编辑器
+# Visual Studio Code
 .vscode/
+.vscode-server/
+*.code-workspace
+
+# JetBrains IDEs (IntelliJ IDEA, WebStorm, PyCharm, etc.)
 .idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+*.sublime-session
+
+# Atom
+.atom/
+
+# Vim
 *.swp
 *.swo
 *~
+.netrwhist
+Session.vim
+Sessionx.vim
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Nano
+*.save
+
+# Eclipse
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# Android Studio
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+
+# Xcode
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.moved-aside
+*.xccheckout
+*.xcscmblueprint
+DerivedData/
+*.hmap
+*.ipa
+*.xcuserstate
+
+# TextMate
+*.tmproj
+*.tmproject
+tmtags
+
+# BBEdit
+*.bbprojectd
+
+# Brackets
+.brackets.json
+
+# CodeRunner
+*.coderunner
+
+# AI 编辑器
+# Cursor (AI-powered code editor)
+.cursor/
+*.cursor-workspace
+.cursor-tutor/
+
+# GitHub Copilot
+.copilot/
+.github-copilot/
+
+# Tabnine
+.tabnine/
+.tabnine-config/
+
+# Codeium
+.codeium/
+codeium.json
+
+# Replit (AI-powered online IDE)
+.replit
+replit.nix
+.config/
+
+# Sourcegraph Cody
+.sourcegraph/
+.cody/
+
+# Amazon CodeWhisperer
+.aws-codecatalyst/
+.codecatalyst/
+
+# JetBrains AI Assistant
+.ai-assistant/
+ai-assistant.xml
+
+# Continue (VS Code AI extension)
+.continue/
+continue.json
+
+# Aider (AI pair programming)
+.aider*
+aider.conf.yml
+
+# Claude Dev / Anthropic
+.claude/
+.anthropic/
+
+# OpenAI Codex related
+.openai/
+.codex/
+
+# Windsurf (Codeium's AI editor)
+.windsurf/
+*.windsurf-workspace
+
+# Zed (AI-enhanced editor)
+.zed/
+*.zed-workspace
+
+# AI chat histories and sessions
+ai-chat-history/
+.ai-sessions/
+*.ai-chat
+*.ai-session
+
+# AI model caches
+.ai-cache/
+.model-cache/
+ai-models/
+
+# 国内 AI 编辑器
+# 通义灵码 (阿里巴巴)
+.tongyi/
+.qwen/
+.alibaba-ai/
+tongyi-config.json
+
+# 文心一言 / 百度 Comate
+.baidu-ai/
+.comate/
+.ernie/
+comate-config.json
+
+# 腾讯云 AI 代码助手
+.tencent-ai/
+.coding-ai/
+.qcloud-ai/
+
+# 字节跳动豆包 MarsCode
+.marscode/
+.doubao/
+.bytedance-ai/
+marscode-config.json
+
+# 华为云 CodeArts Snap
+.huawei-ai/
+.codearts/
+.modelarts/
+codearts-config.json
+
+# 商汤 SenseCode
+.sensecode/
+.sensenova/
+.sensetime-ai/
+
+# 科大讯飞 iFlyCode
+.iflycode/
+.xfyun/
+.iflytek-ai/
+
+# 智谱 AI CodeGeeX
+.codegeex/
+.zhipu-ai/
+.glm/
+codegeex-config.json
+
+# 昆仑万维天工 AI
+.tiangong/
+.kunlun-ai/
+
+# 360 智脑
+.360-ai/
+.so-ai/
+
+# 网易有道 AI
+.youdao-ai/
+.netease-ai/
+
+# 小米 AI
+.xiaomi-ai/
+.mi-ai/
+
+# 京东云言犀 AI
+.jd-ai/
+.yanxi/
+
+# 滴滴 AI
+.didi-ai/
+
+# 美团 AI
+.meituan-ai/
+
+# 快手 AI
+.kuaishou-ai/
+
+# 国产 AI 通用配置
+.china-ai/
+.domestic-ai/
+ai-china-config/
+*.cn-ai
+*.china-ai-config
+
+# 更多 AI 编程工具
+# Trae AI (智能代码助手)
+.trae/
+.trae-ai/
+trae-config.json
+*.trae-session
+
+# CodeBuddy (AI 编程伙伴)
+.codebuddy/
+.buddy-ai/
+codebuddy-config.json
+*.codebuddy-chat
+
+# 通义灵码 Lingma (阿里云)
+.lingma/
+.tongyi-lingma/
+lingma-config.json
+*.lingma-session
+
+# QCoder (腾讯 AI 编程助手)
+.qcoder/
+.tencent-qcoder/
+qcoder-config.json
+*.qcoder-workspace
+
+# 更多新兴 AI 工具
+# DevChat (AI 开发聊天)
+.devchat/
+devchat-history/
+*.devchat-session
+
+# CodeGPT 系列
+.codegpt/
+.gpt-code/
+codegpt-config.json
+
+# AI 代码生成工具
+.ai-codegen/
+.code-generator/
+ai-generated/
+*.ai-gen
+
+# AI 重构工具
+.ai-refactor/
+.refactor-ai/
+refactor-sessions/
+
+# AI 测试生成
+.ai-test/
+.test-ai/
+ai-test-gen/
+
+# AI 文档生成
+.ai-docs/
+.doc-ai/
+ai-documentation/
+
+# AI 代码审查
+.ai-review/
+.review-ai/
+ai-code-review/
+
+# AI 性能优化
+.ai-perf/
+.perf-ai/
+ai-optimization/
+
+# AI 调试助手
+.ai-debug/
+.debug-ai/
+ai-debugging/
 
 # OS 生成的文件
 .DS_Store
