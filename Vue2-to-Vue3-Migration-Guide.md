@@ -15,6 +15,34 @@
 
 ## 🎯 迁移概览
 
+### 📝 重要说明：JavaScript vs TypeScript
+
+> **⚠️ 语言选择需要提前确认**
+> 
+> 在开始迁移前，请先确认您的项目语言选择：
+> 
+> **选择建议：**
+> 1. **现有 JavaScript 项目**：
+>    - ✅ 推荐继续使用 JavaScript，无需强制升级到 TypeScript
+>    - ✅ Vue 3 对 JavaScript 提供完整支持
+>    - ✅ 可以享受 Vue 3 的所有新特性
+> 
+> 2. **现有 TypeScript 项目**：
+>    - ✅ 继续使用 TypeScript，享受更好的类型安全
+>    - ✅ Vue 3 的 TypeScript 支持更加完善
+> 
+> 3. **新项目或考虑升级**：
+>    - 🤔 **需要评估**：团队技术栈、项目复杂度、维护成本
+>    - 🤔 **建议咨询**：项目团队或技术负责人的意见
+>    - 🤔 **渐进式选择**：可以先用 JavaScript，后续再考虑 TypeScript
+> 
+> **本指南的代码示例：**
+> - 所有代码示例都提供 JavaScript 和 TypeScript 两个版本
+> - 根据您的项目情况选择对应的代码示例
+> - 不会强制您使用任何特定语言
+> 
+> 💡 **重要提醒**：如果您不确定是否需要使用 TypeScript，建议先询问项目团队或技术负责人的意见！
+
 ### 迁移收益
 - **性能提升** - Vue 3 提供更好的性能和更小的包体积
 - **Composition API** - 更好的逻辑复用和类型推导
@@ -498,6 +526,1100 @@ app.config.globalProperties.$http = axios
 
 // 或者使用 provide/inject
 app.provide('http', axios)
+```
+
+### 6. Mixins 迁移到 Composition API
+
+#### Vue 2 Mixins 写法
+```javascript
+// mixins/userMixin.js
+export const userMixin = {
+  data() {
+    return {
+      loading: false,
+      userInfo: null
+    }
+  },
+  methods: {
+    async fetchUserInfo(userId) {
+      this.loading = true
+      try {
+        const response = await this.$http.get(`/api/users/${userId}`)
+        this.userInfo = response.data
+      } catch (error) {
+        console.error('获取用户信息失败:', error)
+      } finally {
+        this.loading = false
+      }
+    },
+    resetUserInfo() {
+      this.userInfo = null
+      this.loading = false
+    }
+  },
+  computed: {
+    userName() {
+      return this.userInfo?.name || '未知用户'
+    }
+  }
+}
+
+// 在组件中使用
+export default {
+  mixins: [userMixin],
+  mounted() {
+    this.fetchUserInfo(this.$route.params.id)
+  }
+}
+```
+
+#### Vue 3 Composition API 写法
+
+**TypeScript 版本：**
+```typescript
+// composables/useUser.ts
+import { ref, computed, readonly } from 'vue'
+import type { Ref } from 'vue'
+
+interface UserInfo {
+  id: number
+  name: string
+  email: string
+}
+
+export function useUser() {
+  const loading = ref(false)
+  const userInfo: Ref<UserInfo | null> = ref(null)
+  
+  const userName = computed(() => {
+    return userInfo.value?.name || '未知用户'
+  })
+  
+  const fetchUserInfo = async (userId: number) => {
+    loading.value = true
+    try {
+      const response = await fetch(`/api/users/${userId}`)
+      userInfo.value = await response.json()
+    } catch (error) {
+      console.error('获取用户信息失败:', error)
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  const resetUserInfo = () => {
+    userInfo.value = null
+    loading.value = false
+  }
+  
+  return {
+    loading: readonly(loading),
+    userInfo: readonly(userInfo),
+    userName,
+    fetchUserInfo,
+    resetUserInfo
+  }
+}
+
+// 在组件中使用
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { useUser } from '@/composables/useUser'
+
+const route = useRoute()
+const { loading, userInfo, userName, fetchUserInfo, resetUserInfo } = useUser()
+
+onMounted(() => {
+  fetchUserInfo(Number(route.params.id))
+})
+</script>
+```
+
+**JavaScript 版本：**
+```javascript
+// composables/useUser.js
+import { ref, computed, readonly } from 'vue'
+
+export function useUser() {
+  const loading = ref(false)
+  const userInfo = ref(null)
+  
+  const userName = computed(() => {
+    return userInfo.value?.name || '未知用户'
+  })
+  
+  const fetchUserInfo = async (userId) => {
+    loading.value = true
+    try {
+      const response = await fetch(`/api/users/${userId}`)
+      userInfo.value = await response.json()
+    } catch (error) {
+      console.error('获取用户信息失败:', error)
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  const resetUserInfo = () => {
+    userInfo.value = null
+    loading.value = false
+  }
+  
+  return {
+    loading: readonly(loading),
+    userInfo: readonly(userInfo),
+    userName,
+    fetchUserInfo,
+    resetUserInfo
+  }
+}
+
+// 在组件中使用
+<script setup>
+import { onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { useUser } from '@/composables/useUser'
+
+const route = useRoute()
+const { loading, userInfo, userName, fetchUserInfo, resetUserInfo } = useUser()
+
+onMounted(() => {
+  fetchUserInfo(Number(route.params.id))
+})
+</script>
+```
+
+#### 复杂 Mixin 迁移示例
+```javascript
+// Vue 2 复杂 Mixin
+export const formMixin = {
+  data() {
+    return {
+      form: {},
+      rules: {},
+      loading: false
+    }
+  },
+  methods: {
+    async submitForm() {
+      const valid = await this.$refs.form.validate()
+      if (!valid) return
+      
+      this.loading = true
+      try {
+        await this.handleSubmit(this.form)
+        this.$message.success('提交成功')
+        this.resetForm()
+      } catch (error) {
+        this.$message.error('提交失败')
+      } finally {
+        this.loading = false
+      }
+    },
+    resetForm() {
+      this.$refs.form.resetFields()
+      this.form = {}
+    }
+  }
+}
+
+**TypeScript 版本：**
+```typescript
+// Vue 3 Composable
+export function useForm<T extends Record<string, any>>(
+  initialForm: T,
+  rules: FormRules<T>,
+  submitHandler: (form: T) => Promise<void>
+) {
+  const formRef = ref<FormInstance>()
+  const form = reactive<T>({ ...initialForm })
+  const loading = ref(false)
+  
+  const submitForm = async () => {
+    if (!formRef.value) return
+    
+    const valid = await formRef.value.validate()
+    if (!valid) return
+    
+    loading.value = true
+    try {
+      await submitHandler(form)
+      ElMessage.success('提交成功')
+      resetForm()
+    } catch (error) {
+      ElMessage.error('提交失败')
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  const resetForm = () => {
+    formRef.value?.resetFields()
+    Object.assign(form, initialForm)
+  }
+  
+  return {
+    formRef,
+    form,
+    rules,
+    loading: readonly(loading),
+    submitForm,
+    resetForm
+  }
+}
+```
+
+**JavaScript 版本：**
+```javascript
+// Vue 3 Composable
+export function useForm(initialForm, rules, submitHandler) {
+  const formRef = ref()
+  const form = reactive({ ...initialForm })
+  const loading = ref(false)
+  
+  const submitForm = async () => {
+    if (!formRef.value) return
+    
+    const valid = await formRef.value.validate()
+    if (!valid) return
+    
+    loading.value = true
+    try {
+      await submitHandler(form)
+      ElMessage.success('提交成功')
+      resetForm()
+    } catch (error) {
+      ElMessage.error('提交失败')
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  const resetForm = () => {
+    formRef.value?.resetFields()
+    Object.assign(form, initialForm)
+  }
+  
+  return {
+    formRef,
+    form,
+    rules,
+    loading: readonly(loading),
+    submitForm,
+    resetForm
+  }
+}
+```
+
+### 7. 自定义指令迁移
+
+#### Vue 2 指令钩子
+```javascript
+// Vue 2 自定义指令
+Vue.directive('focus', {
+  // 当被绑定的元素插入到 DOM 中时
+  inserted: function (el) {
+    el.focus()
+  }
+})
+
+Vue.directive('highlight', {
+  bind(el, binding) {
+    el.style.backgroundColor = binding.value
+  },
+  update(el, binding) {
+    el.style.backgroundColor = binding.value
+  }
+})
+
+// 权限指令
+Vue.directive('permission', {
+  bind(el, binding, vnode) {
+    const { value } = binding
+    const roles = vnode.context.$store.getters.roles
+    
+    if (value && !roles.includes(value)) {
+      el.parentNode && el.parentNode.removeChild(el)
+    }
+  }
+})
+```
+
+#### Vue 3 指令钩子
+
+**TypeScript 版本：**
+```typescript
+// Vue 3 自定义指令
+const app = createApp(App)
+
+// 基础指令
+app.directive('focus', {
+  // 当被绑定的元素挂载到 DOM 中时
+  mounted(el: HTMLElement) {
+    el.focus()
+  }
+})
+
+// 带参数的指令
+app.directive('highlight', {
+  beforeMount(el: HTMLElement, binding: DirectiveBinding) {
+    el.style.backgroundColor = binding.value
+  },
+  updated(el: HTMLElement, binding: DirectiveBinding) {
+    el.style.backgroundColor = binding.value
+  }
+})
+
+// 权限指令 - 使用组合式 API
+app.directive('permission', {
+  beforeMount(el: HTMLElement, binding: DirectiveBinding) {
+    const { value } = binding
+    // 通过 inject 或其他方式获取用户权限
+    const hasPermission = checkPermission(value)
+    
+    if (!hasPermission) {
+      el.style.display = 'none'
+      // 或者移除元素
+      // el.parentNode?.removeChild(el)
+    }
+  },
+  updated(el: HTMLElement, binding: DirectiveBinding) {
+    const { value } = binding
+    const hasPermission = checkPermission(value)
+    
+    el.style.display = hasPermission ? '' : 'none'
+  }
+})
+```
+
+**JavaScript 版本：**
+```javascript
+// Vue 3 自定义指令
+const app = createApp(App)
+
+// 基础指令
+app.directive('focus', {
+  // 当被绑定的元素挂载到 DOM 中时
+  mounted(el) {
+    el.focus()
+  }
+})
+
+// 带参数的指令
+app.directive('highlight', {
+  beforeMount(el, binding) {
+    el.style.backgroundColor = binding.value
+  },
+  updated(el, binding) {
+    el.style.backgroundColor = binding.value
+  }
+})
+
+// 权限指令 - 使用组合式 API
+app.directive('permission', {
+  beforeMount(el, binding) {
+    const { value } = binding
+    // 通过 inject 或其他方式获取用户权限
+    const hasPermission = checkPermission(value)
+    
+    if (!hasPermission) {
+      el.style.display = 'none'
+      // 或者移除元素
+      // el.parentNode?.removeChild(el)
+    }
+  },
+  updated(el, binding) {
+    const { value } = binding
+    const hasPermission = checkPermission(value)
+    
+    el.style.display = hasPermission ? '' : 'none'
+  }
+})
+```
+
+#### 指令钩子函数对照表
+| Vue 2 | Vue 3 | 说明 |
+|-------|-------|------|
+| `bind` | `beforeMount` | 指令第一次绑定到元素时调用 |
+| `inserted` | `mounted` | 元素插入父节点时调用 |
+| `update` | `beforeUpdate` | 元素更新前调用 |
+| `componentUpdated` | `updated` | 元素及其子元素更新后调用 |
+| `unbind` | `beforeUnmount` | 指令与元素解绑前调用 |
+| - | `unmounted` | 指令与元素解绑且元素已移除时调用 |
+
+#### 复杂指令迁移示例
+
+**TypeScript 版本：**
+```typescript
+// Vue 2 复杂指令
+Vue.directive('lazy-load', {
+  bind(el: HTMLImageElement, binding: DirectiveBinding) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target as HTMLImageElement
+          img.src = binding.value
+          observer.unobserve(img)
+        }
+      })
+    })
+    
+    ;(el as any)._observer = observer
+    observer.observe(el)
+  },
+  unbind(el: HTMLImageElement) {
+    if ((el as any)._observer) {
+      ;(el as any)._observer.disconnect()
+      delete (el as any)._observer
+    }
+  }
+})
+
+// Vue 3 复杂指令
+app.directive('lazy-load', {
+  beforeMount(el: HTMLImageElement, binding: DirectiveBinding) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target as HTMLImageElement
+          img.src = binding.value
+          observer.unobserve(img)
+        }
+      })
+    })
+    
+    // 使用 WeakMap 存储观察器，避免内存泄漏
+    if (!(el as any)._observer) {
+      ;(el as any)._observer = observer
+    }
+    observer.observe(el)
+  },
+  beforeUnmount(el: HTMLImageElement) {
+    if ((el as any)._observer) {
+      ;(el as any)._observer.disconnect()
+      delete (el as any)._observer
+    }
+  }
+})
+```
+
+**JavaScript 版本：**
+```javascript
+// Vue 2 复杂指令
+Vue.directive('lazy-load', {
+  bind(el, binding) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target
+          img.src = binding.value
+          observer.unobserve(img)
+        }
+      })
+    })
+    
+    el._observer = observer
+    observer.observe(el)
+  },
+  unbind(el) {
+    if (el._observer) {
+      el._observer.disconnect()
+      delete el._observer
+    }
+  }
+})
+
+// Vue 3 复杂指令
+app.directive('lazy-load', {
+  beforeMount(el, binding) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target
+          img.src = binding.value
+          observer.unobserve(img)
+        }
+      })
+    })
+    
+    // 使用 WeakMap 存储观察器，避免内存泄漏
+    if (!el._observer) {
+      el._observer = observer
+    }
+    observer.observe(el)
+  },
+  beforeUnmount(el) {
+    if (el._observer) {
+      el._observer.disconnect()
+      delete el._observer
+    }
+  }
+})
+
+### 8. 过滤器移除和替代方案
+
+#### Vue 2 过滤器
+```vue
+<template>
+  <div>
+    <!-- 在模板中使用过滤器 -->
+    <p>{{ message | capitalize }}</p>
+    <p>{{ price | currency }}</p>
+    <p>{{ date | formatDate('YYYY-MM-DD') }}</p>
+    
+    <!-- 在 v-bind 中使用 -->
+    <div :title="message | capitalize"></div>
+  </div>
+</template>
+
+<script>
+export default {
+  filters: {
+    capitalize(value) {
+      if (!value) return ''
+      return value.toString().charAt(0).toUpperCase() + value.slice(1)
+    },
+    currency(value) {
+      return '¥' + value.toFixed(2)
+    },
+    formatDate(value, format = 'YYYY-MM-DD') {
+      // 使用 moment.js 或其他日期库
+      return moment(value).format(format)
+    }
+  },
+  data() {
+    return {
+      message: 'hello world',
+      price: 99.99,
+      date: new Date()
+    }
+  }
+}
+</script>
+```
+
+#### Vue 3 替代方案
+
+##### 方案1：计算属性
+
+**TypeScript 版本：**
+```vue
+<template>
+  <div>
+    <p>{{ capitalizedMessage }}</p>
+    <p>{{ formattedPrice }}</p>
+    <p>{{ formattedDate }}</p>
+    
+    <div :title="capitalizedMessage"></div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { formatDate as formatDateUtil } from '@/utils/date'
+
+const message = ref('hello world')
+const price = ref(99.99)
+const date = ref(new Date())
+
+const capitalizedMessage = computed(() => {
+  if (!message.value) return ''
+  return message.value.charAt(0).toUpperCase() + message.value.slice(1)
+})
+
+const formattedPrice = computed(() => {
+  return '¥' + price.value.toFixed(2)
+})
+
+const formattedDate = computed(() => {
+  return formatDateUtil(date.value, 'YYYY-MM-DD')
+})
+</script>
+```
+
+**JavaScript 版本：**
+```vue
+<template>
+  <div>
+    <p>{{ capitalizedMessage }}</p>
+    <p>{{ formattedPrice }}</p>
+    <p>{{ formattedDate }}</p>
+    
+    <div :title="capitalizedMessage"></div>
+  </div>
+</template>
+
+<script setup>
+import { computed, ref } from 'vue'
+import { formatDate as formatDateUtil } from '@/utils/date'
+
+const message = ref('hello world')
+const price = ref(99.99)
+const date = ref(new Date())
+
+const capitalizedMessage = computed(() => {
+  if (!message.value) return ''
+  return message.value.charAt(0).toUpperCase() + message.value.slice(1)
+})
+
+const formattedPrice = computed(() => {
+  return '¥' + price.value.toFixed(2)
+})
+
+const formattedDate = computed(() => {
+  return formatDateUtil(date.value, 'YYYY-MM-DD')
+})
+</script>
+```
+
+##### 方案2：全局属性方法
+
+**TypeScript 版本：**
+```typescript
+// main.ts
+const app = createApp(App)
+
+// 注册全局过滤器方法
+app.config.globalProperties.$filters = {
+  capitalize(value: string) {
+    if (!value) return ''
+    return value.charAt(0).toUpperCase() + value.slice(1)
+  },
+  currency(value: number) {
+    return '¥' + value.toFixed(2)
+  },
+  formatDate(value: Date, format = 'YYYY-MM-DD') {
+    return formatDateUtil(value, format)
+  }
+}
+
+// 在组件中使用
+<template>
+  <div>
+    <p>{{ $filters.capitalize(message) }}</p>
+    <p>{{ $filters.currency(price) }}</p>
+    <p>{{ $filters.formatDate(date) }}</p>
+  </div>
+</template>
+```
+
+**JavaScript 版本：**
+```javascript
+// main.js
+const app = createApp(App)
+
+// 注册全局过滤器方法
+app.config.globalProperties.$filters = {
+  capitalize(value) {
+    if (!value) return ''
+    return value.charAt(0).toUpperCase() + value.slice(1)
+  },
+  currency(value) {
+    return '¥' + value.toFixed(2)
+  },
+  formatDate(value, format = 'YYYY-MM-DD') {
+    return formatDateUtil(value, format)
+  }
+}
+
+// 在组件中使用
+<template>
+  <div>
+    <p>{{ $filters.capitalize(message) }}</p>
+    <p>{{ $filters.currency(price) }}</p>
+    <p>{{ $filters.formatDate(date) }}</p>
+  </div>
+</template>
+```
+
+##### 方案3：工具函数 + Composable
+
+**TypeScript 版本：**
+```typescript
+// utils/filters.ts
+export const capitalize = (value: string) => {
+  if (!value) return ''
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+export const currency = (value: number) => {
+  return '¥' + value.toFixed(2)
+}
+
+export const formatDate = (value: Date, format = 'YYYY-MM-DD') => {
+  // 实现日期格式化逻辑
+  return new Intl.DateTimeFormat('zh-CN').format(value)
+}
+
+// composables/useFilters.ts
+import * as filters from '@/utils/filters'
+
+export function useFilters() {
+  return filters
+}
+
+// 在组件中使用
+<script setup lang="ts">
+import { useFilters } from '@/composables/useFilters'
+
+const { capitalize, currency, formatDate } = useFilters()
+const message = ref('hello world')
+const price = ref(99.99)
+const date = ref(new Date())
+</script>
+
+<template>
+  <div>
+    <p>{{ capitalize(message) }}</p>
+    <p>{{ currency(price) }}</p>
+    <p>{{ formatDate(date) }}</p>
+  </div>
+</template>
+```
+
+**JavaScript 版本：**
+```javascript
+// utils/filters.js
+export const capitalize = (value) => {
+  if (!value) return ''
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+export const currency = (value) => {
+  return '¥' + value.toFixed(2)
+}
+
+export const formatDate = (value, format = 'YYYY-MM-DD') => {
+  // 实现日期格式化逻辑
+  return new Intl.DateTimeFormat('zh-CN').format(value)
+}
+
+// composables/useFilters.js
+import * as filters from '@/utils/filters'
+
+export function useFilters() {
+  return filters
+}
+
+// 在组件中使用
+<script setup>
+import { ref } from 'vue'
+import { useFilters } from '@/composables/useFilters'
+
+const { capitalize, currency, formatDate } = useFilters()
+const message = ref('hello world')
+const price = ref(99.99)
+const date = ref(new Date())
+</script>
+
+<template>
+  <div>
+    <p>{{ capitalize(message) }}</p>
+    <p>{{ currency(price) }}</p>
+    <p>{{ formatDate(date) }}</p>
+  </div>
+</template>
+```
+
+### 9. 事件 API 变更
+
+#### Vue 2 事件 API
+```javascript
+// Vue 2 事件总线
+export default {
+  created() {
+    // 监听事件
+    this.$root.$on('user-updated', this.handleUserUpdate)
+    this.$root.$on('theme-changed', this.handleThemeChange)
+  },
+  beforeDestroy() {
+    // 移除事件监听
+    this.$root.$off('user-updated', this.handleUserUpdate)
+    this.$root.$off('theme-changed', this.handleThemeChange)
+  },
+  methods: {
+    updateUser() {
+      // 触发事件
+      this.$root.$emit('user-updated', userData)
+    },
+    handleUserUpdate(userData) {
+      console.log('用户更新:', userData)
+    },
+    handleThemeChange(theme) {
+      console.log('主题变更:', theme)
+    }
+  }
+}
+```
+
+#### Vue 3 替代方案
+
+##### 方案1：使用第三方事件库
+```typescript
+// 安装 mitt
+// npm install mitt
+
+// utils/eventBus.ts
+import mitt from 'mitt'
+
+type Events = {
+  'user-updated': { id: number; name: string }
+  'theme-changed': string
+}
+
+export const eventBus = mitt<Events>()
+
+// 在组件中使用
+<script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue'
+import { eventBus } from '@/utils/eventBus'
+
+const handleUserUpdate = (userData: { id: number; name: string }) => {
+  console.log('用户更新:', userData)
+}
+
+const handleThemeChange = (theme: string) => {
+  console.log('主题变更:', theme)
+}
+
+onMounted(() => {
+  eventBus.on('user-updated', handleUserUpdate)
+  eventBus.on('theme-changed', handleThemeChange)
+})
+
+onUnmounted(() => {
+  eventBus.off('user-updated', handleUserUpdate)
+  eventBus.off('theme-changed', handleThemeChange)
+})
+
+const updateUser = () => {
+  eventBus.emit('user-updated', { id: 1, name: 'John' })
+}
+</script>
+```
+
+##### 方案2：使用 Provide/Inject
+```typescript
+// 父组件提供事件系统
+<script setup lang="ts">
+import { provide, ref } from 'vue'
+import mitt from 'mitt'
+
+const eventBus = mitt()
+provide('eventBus', eventBus)
+</script>
+
+// 子组件注入和使用
+<script setup lang="ts">
+import { inject, onMounted, onUnmounted } from 'vue'
+
+const eventBus = inject('eventBus')
+
+const handleUserUpdate = (userData) => {
+  console.log('用户更新:', userData)
+}
+
+onMounted(() => {
+  eventBus?.on('user-updated', handleUserUpdate)
+})
+
+onUnmounted(() => {
+  eventBus?.off('user-updated', handleUserUpdate)
+})
+</script>
+```
+
+##### 方案3：使用状态管理
+```typescript
+// 使用 Pinia 替代事件总线
+import { defineStore } from 'pinia'
+
+export const useUserStore = defineStore('user', () => {
+  const userInfo = ref(null)
+  
+  const updateUser = (userData) => {
+    userInfo.value = userData
+    // 可以在这里触发副作用
+  }
+  
+  return {
+    userInfo,
+    updateUser
+  }
+})
+
+// 在组件中使用
+<script setup lang="ts">
+import { watch } from 'vue'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+
+// 监听用户信息变化
+watch(() => userStore.userInfo, (newUser) => {
+  console.log('用户更新:', newUser)
+})
+</script>
+```
+
+### 10. 其他重要变更
+
+#### 插槽语法变更
+```vue
+<!-- Vue 2 具名插槽 -->
+<template>
+  <my-component>
+    <template slot="header" slot-scope="{ user }">
+      <h1>{{ user.name }}</h1>
+    </template>
+    
+    <template slot="footer">
+      <p>Footer content</p>
+    </template>
+  </my-component>
+</template>
+
+<!-- Vue 3 具名插槽 -->
+<template>
+  <my-component>
+    <template #header="{ user }">
+      <h1>{{ user.name }}</h1>
+    </template>
+    
+    <template #footer>
+      <p>Footer content</p>
+    </template>
+  </my-component>
+</template>
+```
+
+#### 异步组件定义
+```javascript
+// Vue 2 异步组件
+const AsyncComponent = () => import('./AsyncComponent.vue')
+
+// 或者使用高级异步组件
+const AsyncComponent = () => ({
+  component: import('./AsyncComponent.vue'),
+  loading: LoadingComponent,
+  error: ErrorComponent,
+  delay: 200,
+  timeout: 3000
+})
+
+// Vue 3 异步组件
+import { defineAsyncComponent } from 'vue'
+
+const AsyncComponent = defineAsyncComponent(() => import('./AsyncComponent.vue'))
+
+// 高级异步组件
+const AsyncComponent = defineAsyncComponent({
+  loader: () => import('./AsyncComponent.vue'),
+  loadingComponent: LoadingComponent,
+  errorComponent: ErrorComponent,
+  delay: 200,
+  timeout: 3000
+})
+```
+
+#### 函数式组件
+```javascript
+// Vue 2 函数式组件
+export default {
+  functional: true,
+  props: ['level'],
+  render(h, { props, children }) {
+    return h(`h${props.level}`, children)
+  }
+}
+
+// Vue 3 函数式组件
+export default function MyComponent(props, { slots }) {
+  return h(`h${props.level}`, slots.default())
+}
+
+// 或者使用 setup 函数
+export default {
+  props: ['level'],
+  setup(props, { slots }) {
+    return () => h(`h${props.level}`, slots.default())
+  }
+}
+```
+
+#### 多根节点支持
+```vue
+<!-- Vue 2 必须有单一根节点 -->
+<template>
+  <div>
+    <header>Header</header>
+    <main>Main content</main>
+    <footer>Footer</footer>
+  </div>
+</template>
+
+<!-- Vue 3 支持多根节点 -->
+<template>
+  <header>Header</header>
+  <main>Main content</main>
+  <footer>Footer</footer>
+</template>
+```
+
+#### Teleport (传送门)
+```vue
+<!-- Vue 3 新增 Teleport 功能 -->
+<template>
+  <div>
+    <h1>App Content</h1>
+    
+    <!-- 将模态框传送到 body 下 -->
+    <Teleport to="body">
+      <div class="modal" v-if="showModal">
+        <div class="modal-content">
+          <h2>Modal Title</h2>
+          <p>Modal content</p>
+          <button @click="showModal = false">Close</button>
+        </div>
+      </div>
+    </Teleport>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+const showModal = ref(false)
+</script>
+```
+
+#### Suspense (实验性功能)
+```vue
+<!-- Vue 3 Suspense 组件 -->
+<template>
+  <Suspense>
+    <!-- 异步组件 -->
+    <template #default>
+      <AsyncComponent />
+    </template>
+    
+    <!-- 加载状态 -->
+    <template #fallback>
+      <div>Loading...</div>
+    </template>
+  </Suspense>
+</template>
+
+<script setup>
+import { defineAsyncComponent } from 'vue'
+
+const AsyncComponent = defineAsyncComponent(async () => {
+  // 模拟异步加载
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  return import('./MyAsyncComponent.vue')
+})
+</script>
 ```
 
 ## 🎨 Element Plus 迁移
