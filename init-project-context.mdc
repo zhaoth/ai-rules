@@ -1,0 +1,54 @@
+---
+name: init-project-context
+scope: project
+description: >
+  一键初始化项目上下文：
+  - 扫描项目目录
+  - 自动生成/更新 Rules 文件
+  - 自动生成/更新 Memories 文件
+  - 输出项目概要、核心模块、风险点
+  - 支持新项目和老项目模式
+---
+
+# Cursor Command: 初始化项目上下文
+
+## 1. 扫描项目
+- 自动扫描项目根目录及子目录
+- 检测关键文件：
+  - `package.json` / `pyproject.toml` / `requirements.txt`
+  - `src/` 或核心模块目录
+  - `.git` 信息
+- 自动识别：
+  - 技术栈（语言/框架）
+  - 入口文件
+  - 核心模块列表
+
+## 2. 自动生成 Rules
+- 路径：`.cursor/rules/`
+- 根据技术栈生成默认规则示例：
+  - TypeScript: 严格模式、禁止 `any`  
+  - Python: 使用 type hints、PEP8
+  - JS/TS 前端: React/Vue 风格统一
+- 对老项目可开启最小改动模式 (`--legacy`)
+- 文件命名示例：
+  - `typescript-preferences.mdc`
+  - `python-style.mdc`
+  - `frontend-preferences.mdc`
+
+## 3. 自动生成 Memories
+- 路径：`.cursor/memories/`
+- 默认内容示例：
+  ```yaml
+  tech_stack:
+    frontend: React
+    backend: Node.js
+  core_modules:
+    - auth
+    - database
+    - api
+  risk_modules:
+    - legacy_utils
+    - old_integration
+  team_preferences:
+    naming_convention: camelCase
+    code_style: strict
